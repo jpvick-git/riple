@@ -8,7 +8,7 @@ import { createPendingShell, saveScenarioLocal } from "@/lib/scenarioStorage";
 import type { GenerationDepth } from "@/lib/types";
 
 const examples = [
-  "What if Command Alkon, Inc. was never formed?",
+  "What if the Titanic never sank?",
   "What if the TV show Law & Order never aired?",
   "What if the internet was never invented?",
   "What if cats controlled the banking system?"
