@@ -71,18 +71,30 @@ pm2 startup
 # run the command PM2 prints
 ```
 
-Check: `curl -I http://127.0.0.1:3000`
+Check: `curl -I http://127.0.0.1:3001`
+
+## Same droplet as another app
+
+Ripple is configured for **port 3001** so it does not collide with another Next/Node app on 3000 (for example a car flipper site).
+
+Nginx uses `server_name riple.me` — keep your other app’s site config as a separate file with its own domain. Both can listen on ports 80/443; Nginx routes by hostname.
+
+```text
+riple.me  → 127.0.0.1:3001  (this app)
+other.app → 127.0.0.1:3000  (existing app)
+```
+
+Do **not** remove your existing Nginx site when enabling Ripple. Only add `riple.me` and reload Nginx.
 
 ## 6. Configure Nginx
 
 ```bash
 cp deploy/nginx-riple.me.conf /etc/nginx/sites-available/riple.me
 ln -sf /etc/nginx/sites-available/riple.me /etc/nginx/sites-enabled/riple.me
-rm -f /etc/nginx/sites-enabled/default
+# Do NOT delete your other app's site from sites-enabled
 nginx -t
 systemctl reload nginx
 ```
-
 ## 7. Enable HTTPS
 
 ```bash
