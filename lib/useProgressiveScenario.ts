@@ -88,6 +88,13 @@ export function useProgressiveScenario(slug: string) {
   const persist = useCallback((next: Scenario) => {
     saveScenarioLocal(next);
     setScenario(next);
+    void fetch("/api/scenarios", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(next)
+    }).catch((error) => {
+      console.error("Failed to persist scenario to database:", error);
+    });
   }, []);
 
   const loadFoundation = useCallback(
@@ -304,55 +311,78 @@ export function useProgressiveScenario(slug: string) {
     inFlightRef.current.clear();
     setFoundationError("");
     setDeepStatus("");
+    setMissing(false);
 
-    const stored = loadScenarioLocal(slug);
-    if (!stored) {
-      setMissing(true);
-      return;
-    }
+    let cancelled = false;
 
-    if (needsFoundation(stored)) {
-      void (async () => {
+    async function hydrate() {
+      const stored = loadScenarioLocal(slug);
+
+      if (stored && needsFoundation(stored)) {
         const foundation = await loadFoundation(asPendingShell(stored));
-        if (foundation) void deepen(foundation);
-      })();
-      return;
-    }
-
-    const full = stored as Scenario;
-    // Backfill older saved scenarios missing progressive fields
-    const hydrated: Scenario = {
-      ...full,
-      depth: full.depth ?? "standard",
-      finalState: full.finalState ?? null,
-      alternateOutcomes: full.alternateOutcomes ?? [],
-      sources: full.sources ?? [],
-      timeline: (full.timeline ?? []).map((event) => ({
-        ...event,
-        details: event.details ?? null,
-        detailState: event.details ? "ready" : event.detailState ?? "outline",
-        toneNote: event.toneNote ?? null,
-        sourceRefs: event.sourceRefs ?? []
-      })),
-      generation: full.generation ?? {
-        foundation: "complete",
-        eventDetails: Object.fromEntries(
-          (full.timeline ?? []).map((event) => [
-            event.id,
-            event.details ? "complete" : "pending"
-          ])
-        ),
-        conclusion: full.finalState ? "complete" : "pending",
-        sources: (full.sources?.length ?? 0) > 0 ? "complete" : "pending"
+        if (!cancelled && foundation) void deepen(foundation);
+        return;
       }
-    };
 
-    setScenario(hydrated);
-    if (isDeepAnalysisPending(hydrated)) {
-      void deepen(hydrated);
+      let full = stored && !needsFoundation(stored) ? (stored as Scenario) : null;
+
+      if (!full) {
+        try {
+          const response = await fetch(`/api/scenarios/${encodeURIComponent(slug)}`);
+          if (response.ok) {
+            full = (await response.json()) as Scenario;
+            saveScenarioLocal(full);
+          }
+        } catch (error) {
+          console.error("Failed to load scenario from database:", error);
+        }
+      }
+
+      if (cancelled) return;
+
+      if (!full) {
+        setMissing(true);
+        return;
+      }
+
+      const hydrated: Scenario = {
+        ...full,
+        kind: "scenario",
+        depth: full.depth ?? "standard",
+        finalState: full.finalState ?? null,
+        alternateOutcomes: full.alternateOutcomes ?? [],
+        sources: full.sources ?? [],
+        timeline: (full.timeline ?? []).map((event) => ({
+          ...event,
+          details: event.details ?? null,
+          detailState: event.details ? "ready" : event.detailState ?? "outline",
+          toneNote: event.toneNote ?? null,
+          sourceRefs: event.sourceRefs ?? []
+        })),
+        generation: full.generation ?? {
+          foundation: "complete",
+          eventDetails: Object.fromEntries(
+            (full.timeline ?? []).map((event) => [
+              event.id,
+              event.details ? "complete" : "pending"
+            ])
+          ),
+          conclusion: full.finalState ? "complete" : "pending",
+          sources: (full.sources?.length ?? 0) > 0 ? "complete" : "pending"
+        }
+      };
+
+      setScenario(hydrated);
+      saveScenarioLocal(hydrated);
+      if (isDeepAnalysisPending(hydrated)) {
+        void deepen(hydrated);
+      }
     }
+
+    void hydrate();
 
     return () => {
+      cancelled = true;
       abortRef.current?.abort();
     };
   }, [deepen, loadFoundation, slug]);

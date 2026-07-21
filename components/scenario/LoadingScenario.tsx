@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const FOUNDATION_MESSAGES = [
   "Finding the point of divergence",
@@ -31,7 +31,7 @@ export function LoadingScenario({
   if (compact) {
     return (
       <div className="generation-status" role="status" aria-live="polite">
-        <LoaderCircle className="spin" size={16} aria-hidden="true" />
+        <BrandLogo variant="mark" href={null} className="brand-logo-inline spin-soft" />
         <div className="generation-status-copy">
           <strong>{status}…</strong>
         </div>
@@ -41,7 +41,7 @@ export function LoadingScenario({
 
   return (
     <main className="state-page">
-      <LoaderCircle className="spin" size={34} aria-hidden="true" />
+      <BrandLogo variant="mark" href={null} className="brand-logo-loading spin-soft" />
       <p role="status" aria-live="polite">
         {status}…
       </p>

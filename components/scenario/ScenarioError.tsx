@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, RotateCcw } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function ScenarioError({
   message,
@@ -13,6 +14,7 @@ export function ScenarioError({
   return (
     <main className="state-page">
       <div className="state-card">
+        <BrandLogo variant="mark" href={null} className="brand-logo-state" />
         <h1>Something went wrong</h1>
         <p>{message}</p>
         {prompt ? (

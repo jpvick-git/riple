@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, GitBranch, Share2 } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Timeline } from "@/components/Timeline";
 import { AlternateOutcomes } from "@/components/scenario/AlternateOutcomes";
 import { FinalWorldState } from "@/components/scenario/FinalWorldState";
@@ -67,6 +68,7 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
         <Link href="/" className="back-link">
           <ArrowLeft size={18} /> New riple
         </Link>
+        <BrandLogo variant="wordmark" />
         <div className="nav-actions">
           <button type="button" onClick={shareScenario}>
             <Share2 size={16} /> Share

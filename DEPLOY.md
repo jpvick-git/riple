@@ -125,6 +125,8 @@ pm2 restart riple
 
 - [ ] DNS A records for `@` and `www`
 - [ ] `.env.local` on the server with `OPENAI_API_KEY`
+- [ ] `.env.local` includes `DATABASE_URL` for the `riple` Postgres database
+- [ ] Database trusted sources include the droplet IP
 - [ ] `npm run build` succeeds
 - [ ] PM2 shows `riple` online
 - [ ] `https://riple.me` loads

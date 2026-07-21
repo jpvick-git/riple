@@ -4,6 +4,7 @@ import { foundationToScenario } from "@/lib/normalizeScenario";
 import { createStructuredResponse, createSlug, isTimeoutError } from "@/lib/openai";
 import { createFoundationJsonSchema, createFoundationSchema, generationDepths } from "@/lib/scenarioSchema";
 import { getFastModel } from "@/lib/openai";
+import { saveScenario } from "@/lib/scenarioRepository";
 import type { GenerationDepth } from "@/lib/types";
 import { eventCountForDepth } from "@/lib/types";
 
@@ -62,6 +63,11 @@ export async function POST(request: Request) {
         prompt: question,
         depth
       });
+      try {
+        await saveScenario(hydrated);
+      } catch (error) {
+        console.error("Failed to persist cached foundation:", error);
+      }
       return NextResponse.json({ ...hydrated, cached: true });
     }
 
@@ -132,6 +138,11 @@ Generate ${counts.min}-${counts.max} timeline event outlines now.`
     });
     const scenario = foundationToScenario(parsed, depth, id);
     saveFoundationCache(scenario);
+    try {
+      await saveScenario(scenario);
+    } catch (error) {
+      console.error("Failed to persist foundation scenario:", error);
+    }
 
     console.info(
       `[generate:foundation] events=${scenario.timeline.length} duration=${(durationMs / 1000).toFixed(1)}s cached=false`
