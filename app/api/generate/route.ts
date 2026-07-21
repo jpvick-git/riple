@@ -12,7 +12,7 @@ export const maxDuration = 60;
 
 const FOUNDATION_TIMEOUT_MS = 40_000;
 
-const SYSTEM_PROMPT = `You build a fast alternate-history foundation for Ripple.
+const SYSTEM_PROMPT = `You build a fast alternate-history foundation for Riple.
 
 Return only a concise Stage 1 foundation:
 - title, summary, point of divergence
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       route: "generate:foundation",
       model,
       timeoutMs: FOUNDATION_TIMEOUT_MS,
-      schemaName: "ripple_foundation",
+      schemaName: "riple_foundation",
       schema: createFoundationJsonSchema(depth) as unknown as Record<string, unknown>,
       system: SYSTEM_PROMPT,
       user: `id: ${id}
@@ -144,7 +144,7 @@ Generate ${counts.min}-${counts.max} timeline event outlines now.`
       {
         error: isTimeoutError(error)
           ? "Foundation generation timed out. Please retry."
-          : "Ripple could not build this foundation. Please try again."
+          : "Riple could not build this foundation. Please try again."
       },
       { status: 500 }
     );

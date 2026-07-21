@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Waves } from "lucide-react";
 import { createSlug } from "@/lib/openai-client";
 import { createPendingShell, saveScenarioLocal } from "@/lib/scenarioStorage";
 import type { GenerationDepth } from "@/lib/types";
@@ -44,7 +43,7 @@ export function ScenarioForm() {
   const [error, setError] = useState("");
   const submittingRef = useRef(false);
 
-  function startRipple(cleanQuestion: string) {
+  function startRiple(cleanQuestion: string) {
     if (submittingRef.current || isGenerating) return;
     submittingRef.current = true;
     setIsGenerating(true);
@@ -59,7 +58,7 @@ export function ScenarioForm() {
       submittingRef.current = false;
       setIsGenerating(false);
       setError(
-        startError instanceof Error ? startError.message : "Could not start this ripple."
+        startError instanceof Error ? startError.message : "Could not start this riple."
       );
     }
   }
@@ -68,13 +67,13 @@ export function ScenarioForm() {
     event.preventDefault();
     const cleanQuestion = question.trim();
     if (!cleanQuestion) return;
-    startRipple(cleanQuestion);
+    startRiple(cleanQuestion);
   }
 
   return (
     <div className="scenario-builder">
       <form onSubmit={submitScenario}>
-        <label htmlFor="scenario">What single change should start the ripple?</label>
+        <label htmlFor="scenario">What single change should start the riple?</label>
         <div className="prompt-row">
           <input
             id="scenario"
@@ -84,8 +83,7 @@ export function ScenarioForm() {
             disabled={isGenerating}
           />
           <button type="submit" disabled={isGenerating || !question.trim()}>
-            <Waves size={18} />
-            {isGenerating ? "Opening ripple..." : "Create Ripple"}
+            {isGenerating ? "Opening riple..." : "Create Riple"}
           </button>
         </div>
 

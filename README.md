@@ -1,6 +1,6 @@
-# Ripple
+# Riple
 
-Ripple is an AI-powered “what if?” explorer. Enter one changed event and the app researches the real-world context, then generates a structured speculative cause-and-effect timeline.
+Riple is an AI-powered “what if?” explorer. Enter one changed event and the app researches the real-world context, then generates a structured speculative cause-and-effect timeline.
 
 ## Setup
 
@@ -39,15 +39,6 @@ npm run dev
 
 7. Open `http://localhost:3000`.
 
-## What now works
+## Production
 
-- Any valid what-if prompt is sent to a server-only API route.
-- Real companies, people, products, and historical events can be researched with web search.
-- The AI returns a structured scenario containing historical context, assumptions, a point of divergence, and 5–8 linked timeline events.
-- Responses are validated before display.
-- Loading and error states explain what is happening.
-- The API key remains on the server and is never exposed to the browser.
-
-## Current limitation
-
-Generated scenarios are stored in browser session storage. Refreshing the page works, but opening the generated URL in a different browser or device will not. Database persistence, user accounts, branching, and permanent share links are later phases.
+See [DEPLOY.md](./DEPLOY.md) for hosting on a DigitalOcean droplet at `riple.me`.

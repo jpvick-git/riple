@@ -18,7 +18,7 @@ export function createPrototypeScenario(question: string, id: string): Scenario 
 
   return {
     id,
-    title: `The Ripple Where ${title}`,
+    title: `The Riple Where ${title}`,
     prompt: question,
     depth: "standard",
     summary: `A single change—${subject}—creates immediate reactions, secondary consequences, and longer-term shifts. These events are generic prototype content until AI generation is connected.`,
@@ -59,7 +59,7 @@ export function createPrototypeScenario(question: string, id: string): Scenario 
             ? "The original change occurs"
             : index === 1
               ? "The first major consequences appear"
-              : `Structural ripple ${index + 1}`,
+              : `Structural riple ${index + 1}`,
         summary:
           index === 0
             ? `The timeline diverges when ${subject}.`

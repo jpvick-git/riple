@@ -27,7 +27,7 @@ export function ScenarioError({
             </button>
           ) : null}
           <Link href="/" className="primary-link">
-            <ArrowLeft size={18} /> Create a new ripple
+            <ArrowLeft size={18} /> Create a new riple
           </Link>
         </div>
       </div>

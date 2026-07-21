@@ -1,6 +1,6 @@
 import type { GenerationDepth, GenerationStatus, PendingScenarioShell, Scenario } from "@/lib/types";
 
-const STORAGE_PREFIX = "ripple:";
+const STORAGE_PREFIX = "riple:";
 
 export function storageKey(id: string) {
   return `${STORAGE_PREFIX}${id}`;

@@ -29,7 +29,7 @@ export function Timeline({
       : events.filter((event) => event.category === selectedCategory);
 
   return (
-    <section className="timeline-section" aria-label="Ripple timeline">
+    <section className="timeline-section" aria-label="Riple timeline">
       <TimelineFilters
         categories={categories}
         selected={selectedCategory}

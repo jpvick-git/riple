@@ -10,7 +10,7 @@ export const maxDuration = 60;
 
 const DETAIL_TIMEOUT_MS = 55_000;
 
-const SYSTEM_PROMPT = `You deepen alternate-history timeline events for Ripple.
+const SYSTEM_PROMPT = `You deepen alternate-history timeline events for Riple.
 
 Given the point of divergence, assumptions, and compact event outlines, write detailed analysis for ONLY the requested event IDs.
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       route: "generate:event-details",
       model,
       timeoutMs: DETAIL_TIMEOUT_MS,
-      schemaName: "ripple_event_details",
+      schemaName: "riple_event_details",
       schema: eventDetailsJsonSchema as unknown as Record<string, unknown>,
       system: SYSTEM_PROMPT,
       user: JSON.stringify({

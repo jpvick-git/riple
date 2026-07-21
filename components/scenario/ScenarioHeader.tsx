@@ -10,7 +10,7 @@ export function ScenarioHeader({
   return (
     <header className="scenario-hero">
       <div className="eyebrow">Generated consequences</div>
-      <h1>Ripple Timeline</h1>
+      <h1>Riple Timeline</h1>
       <p className="scenario-title-line">{title}</p>
       <p className="question">{prompt}</p>
       <p className="summary">{summary}</p>

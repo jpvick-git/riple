@@ -25,14 +25,14 @@ export interface CachedScenario {
 }
 
 const globalForCache = globalThis as typeof globalThis & {
-  __rippleScenarioCache?: Map<string, CachedScenario>;
+  __ripleScenarioCache?: Map<string, CachedScenario>;
 };
 
 function store() {
-  if (!globalForCache.__rippleScenarioCache) {
-    globalForCache.__rippleScenarioCache = new Map();
+  if (!globalForCache.__ripleScenarioCache) {
+    globalForCache.__ripleScenarioCache = new Map();
   }
-  return globalForCache.__rippleScenarioCache;
+  return globalForCache.__ripleScenarioCache;
 }
 
 export function getCacheKey(prompt: string, depth: GenerationDepth) {

@@ -43,7 +43,7 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
 
   if (missing) {
     return (
-      <ScenarioError message="This ripple is no longer in this browser session. Generate it again from the home page." />
+      <ScenarioError message="This riple is no longer in this browser session. Generate it again from the home page." />
     );
   }
 
@@ -65,7 +65,7 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
     <main className="scenario-page">
       <nav className="nav-shell scenario-nav">
         <Link href="/" className="back-link">
-          <ArrowLeft size={18} /> New ripple
+          <ArrowLeft size={18} /> New riple
         </Link>
         <div className="nav-actions">
           <button type="button" onClick={shareScenario}>
@@ -80,7 +80,7 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
       <div className="scenario-page-shell">
         {isDeepening ? (
           <div className="deep-progress" role="status" aria-live="polite">
-            <strong>The Ripple is ready</strong>
+            <strong>The Riple is ready</strong>
             <span>
               {deepStatus || "Deeper consequences are still being traced"}…
             </span>
@@ -99,7 +99,7 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
           <div className="timeline-panel">
             <div className="section-heading">
               <span>Generated consequences</span>
-              <h2>Ripple Timeline</h2>
+              <h2>Riple Timeline</h2>
             </div>
             <Timeline
               events={scenario.timeline}

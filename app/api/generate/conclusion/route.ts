@@ -14,7 +14,7 @@ export const maxDuration = 60;
 
 const CONCLUSION_TIMEOUT_MS = 55_000;
 
-const SYSTEM_PROMPT = `You write concise alternate-history conclusions for Ripple.
+const SYSTEM_PROMPT = `You write concise alternate-history conclusions for Riple.
 
 Return:
 - 2 to 4 alternateOutcomes with probability labels
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       route: "generate:conclusion",
       model,
       timeoutMs: CONCLUSION_TIMEOUT_MS,
-      schemaName: "ripple_conclusion",
+      schemaName: "riple_conclusion",
       schema: scenarioConclusionJsonSchema as unknown as Record<string, unknown>,
       system: SYSTEM_PROMPT,
       user: JSON.stringify({

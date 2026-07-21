@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       route: "generate:sources",
       model,
       timeoutMs: SOURCES_TIMEOUT_MS,
-      schemaName: "ripple_sources",
+      schemaName: "riple_sources",
       schema: scenarioSourcesJsonSchema as unknown as Record<string, unknown>,
       tools: [{ type: "web_search" }],
       system: `Return only real reference sources for factual historical context related to the prompt. Do not invent sources. Prefer reputable publishers. Clean URLs without tracking parameters. If none are reliable, return an empty sources array.`,

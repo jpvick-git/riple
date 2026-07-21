@@ -1,10 +1,10 @@
-# Deploy Ripple to a DigitalOcean droplet (riple.me)
+﻿# Deploy Riple to a DigitalOcean droplet (riple.me)
 
 This guide assumes an Ubuntu droplet and the domain **riple.me**.
 
 ## 1. Point DNS at your droplet
 
-In your domain registrar (or DigitalOcean Networking → Domains):
+In your domain registrar (or DigitalOcean Networking â†’ Domains):
 
 | Type | Name | Value              | TTL  |
 |------|------|--------------------|------|
@@ -75,16 +75,16 @@ Check: `curl -I http://127.0.0.1:3001`
 
 ## Same droplet as another app
 
-Ripple is configured for **port 3001** so it does not collide with another Next/Node app on 3000 (for example a car flipper site).
+Riple is configured for **port 3001** so it does not collide with another Next/Node app on 3000 (for example a car flipper site).
 
-Nginx uses `server_name riple.me` — keep your other app’s site config as a separate file with its own domain. Both can listen on ports 80/443; Nginx routes by hostname.
+Nginx uses `server_name riple.me` â€” keep your other appâ€™s site config as a separate file with its own domain. Both can listen on ports 80/443; Nginx routes by hostname.
 
 ```text
-riple.me  → 127.0.0.1:3001  (this app)
-other.app → 127.0.0.1:3000  (existing app)
+riple.me  â†’ 127.0.0.1:3001  (this app)
+other.app â†’ 127.0.0.1:3000  (existing app)
 ```
 
-Do **not** remove your existing Nginx site when enabling Ripple. Only add `riple.me` and reload Nginx.
+Do **not** remove your existing Nginx site when enabling Riple. Only add `riple.me` and reload Nginx.
 
 ## 6. Configure Nginx
 
@@ -128,4 +128,5 @@ pm2 restart riple
 - [ ] `npm run build` succeeds
 - [ ] PM2 shows `riple` online
 - [ ] `https://riple.me` loads
-- [ ] Create Ripple works (API key valid)
+- [ ] Create Riple works (API key valid)
+
