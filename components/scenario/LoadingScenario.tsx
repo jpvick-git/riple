@@ -10,13 +10,6 @@ const FOUNDATION_MESSAGES = [
   "Building the initial timeline"
 ];
 
-function formatElapsed(seconds: number) {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  if (mins === 0) return `${secs}s`;
-  return `${mins}m ${secs.toString().padStart(2, "0")}s`;
-}
-
 export function LoadingScenario({
   compact = false,
   message
@@ -25,19 +18,12 @@ export function LoadingScenario({
   message?: string;
 }) {
   const [index, setIndex] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
     const statusTimer = window.setInterval(() => {
       setIndex((current) => (current + 1) % FOUNDATION_MESSAGES.length);
     }, 2200);
-    const elapsedTimer = window.setInterval(() => {
-      setElapsed((current) => current + 1);
-    }, 1000);
-    return () => {
-      window.clearInterval(statusTimer);
-      window.clearInterval(elapsedTimer);
-    };
+    return () => window.clearInterval(statusTimer);
   }, []);
 
   const status = message || FOUNDATION_MESSAGES[index];
@@ -48,7 +34,6 @@ export function LoadingScenario({
         <LoaderCircle className="spin" size={16} aria-hidden="true" />
         <div className="generation-status-copy">
           <strong>{status}…</strong>
-          <span>Elapsed: {formatElapsed(elapsed)}</span>
         </div>
       </div>
     );
@@ -61,8 +46,7 @@ export function LoadingScenario({
         {status}…
       </p>
       <p className="muted-copy">
-        The first timeline usually appears within about 10 seconds. Elapsed:{" "}
-        {formatElapsed(elapsed)}
+        The first timeline usually appears within about 10 seconds.
       </p>
     </main>
   );

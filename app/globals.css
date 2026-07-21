@@ -786,9 +786,20 @@ input:disabled {
   min-height: 100vh;
   display: grid;
   place-content: center;
+  justify-items: center;
   gap: 16px;
   text-align: center;
   padding: 24px;
+}
+
+.state-page .spin {
+  display: block;
+  margin: 0 auto;
+}
+
+.state-page p {
+  margin: 0;
+  max-width: 36rem;
 }
 
 .state-card {
