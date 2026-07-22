@@ -11,7 +11,6 @@ import { ScenarioError } from "@/components/scenario/ScenarioError";
 import { ScenarioHeader } from "@/components/scenario/ScenarioHeader";
 import { ScenarioSidebar } from "@/components/scenario/ScenarioSidebar";
 import { SourcesList } from "@/components/scenario/SourcesList";
-import { TimelineGlance } from "@/components/scenario/TimelineGlance";
 import { useProgressiveScenario } from "@/lib/useProgressiveScenario";
 
 interface ScenarioPageProps {
@@ -100,7 +99,6 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
           </div>
 
           <div className="timeline-panel">
-            <TimelineGlance scenario={scenario} />
             <Timeline
               events={scenario.timeline}
               sources={scenario.sources}

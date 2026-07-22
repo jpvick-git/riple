@@ -637,60 +637,10 @@ a { color: inherit; text-decoration: none; }
   gap: var(--section-gap);
 }
 
-.timeline-glance,
 .timeline-panel > .content-card {
   margin-left: var(--timeline-gutter);
   width: calc(100% - var(--timeline-gutter));
   box-sizing: border-box;
-}
-
-.timeline-glance {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 18px 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: rgba(143, 179, 255, .05);
-}
-
-.glance-item {
-  display: grid;
-  gap: 6px;
-  align-content: start;
-  min-width: 0;
-}
-
-.glance-label {
-  font-size: .72rem;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.glance-value {
-  font-size: 1.15rem;
-  font-weight: 650;
-  letter-spacing: -.02em;
-  color: var(--text);
-}
-
-.glance-span {
-  font-size: 1rem;
-  line-height: 1.35;
-}
-
-.glance-change {
-  grid-column: 1 / -1;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
-}
-
-.glance-change p {
-  margin: 0;
-  color: var(--muted);
-  font-size: .95rem;
-  line-height: 1.5;
 }
 
 .sidebar-card {
@@ -1155,6 +1105,11 @@ input:disabled {
   .timeline-panel {
     --timeline-label: 72px;
     --timeline-rail: 28px;
+  }
+
+  .timeline-panel > .content-card {
+    margin-left: 0;
+    width: 100%;
   }
 
   .prompt-row { flex-direction: column; }
