@@ -637,10 +637,96 @@ a { color: inherit; text-decoration: none; }
   gap: var(--section-gap);
 }
 
+.timeline-glance,
 .timeline-panel > .content-card {
   margin-left: var(--timeline-gutter);
   width: calc(100% - var(--timeline-gutter));
   box-sizing: border-box;
+}
+
+.timeline-glance {
+  display: grid;
+  gap: 18px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(180deg, rgba(143, 179, 255, .1), rgba(143, 179, 255, .03));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+.glance-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.glance-eyebrow {
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.glance-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.glance-item {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+
+.glance-label {
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.glance-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.glance-span {
+  font-size: 1.02rem;
+  line-height: 1.35;
+}
+
+.glance-change {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: rgba(7, 9, 15, .35);
+}
+
+.glance-change-date {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--accent-strong);
+}
+
+.glance-change p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .95rem;
+  line-height: 1.55;
 }
 
 .sidebar-card {
@@ -1107,9 +1193,15 @@ input:disabled {
     --timeline-rail: 28px;
   }
 
+  .timeline-glance,
   .timeline-panel > .content-card {
     margin-left: 0;
     width: 100%;
+  }
+
+  .glance-stats {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .prompt-row { flex-direction: column; }
