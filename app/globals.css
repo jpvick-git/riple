@@ -695,6 +695,8 @@ a { color: inherit; text-decoration: none; }
 }
 
 .timeline {
+  --timeline-label: 88px;
+  --timeline-rail: 32px;
   position: relative;
   width: 100%;
 }
@@ -702,7 +704,7 @@ a { color: inherit; text-decoration: none; }
 .timeline::before {
   content: "";
   position: absolute;
-  left: 56px;
+  left: calc(var(--timeline-label) + (var(--timeline-rail) / 2) - 0.5px);
   top: 0;
   bottom: 0;
   width: 1px;
@@ -711,29 +713,39 @@ a { color: inherit; text-decoration: none; }
 
 .timeline-item {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr);
+  grid-template-columns: var(--timeline-label) var(--timeline-rail) minmax(0, 1fr);
   position: relative;
   margin-bottom: 20px;
   width: 100%;
 }
 
+.timeline-rail {
+  grid-column: 2;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 34px;
+}
+
 .timeline-marker {
-  position: absolute;
-  left: 50px;
-  top: 34px;
   width: 13px;
   height: 13px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 6px var(--bg);
 }
 
 .timeline-year {
+  grid-column: 1;
   padding-top: 24px;
+  padding-right: 6px;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 4px;
   min-width: 0;
+  text-align: right;
 }
 
 .timeline-date {
@@ -741,14 +753,18 @@ a { color: inherit; text-decoration: none; }
   font-weight: 800;
   font-size: .95rem;
   line-height: 1.3;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .timeline-era {
   color: var(--muted);
   font-size: .75rem;
   line-height: 1.4;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+
+.timeline-item > .event-card {
+  grid-column: 3;
 }
 
 .event-card { overflow: hidden; }
@@ -1089,12 +1105,10 @@ input:disabled {
     padding: 14px;
   }
 
-  .timeline-item {
-    grid-template-columns: 82px minmax(0, 1fr);
+  .timeline {
+    --timeline-label: 72px;
+    --timeline-rail: 28px;
   }
-
-  .timeline::before { left: 37px; }
-  .timeline-marker { left: 31px; }
 
   .event-header,
   .event-details,
