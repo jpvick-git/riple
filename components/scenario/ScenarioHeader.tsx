@@ -15,8 +15,8 @@ export function ScenarioHeader({
       <p className="question">{prompt}</p>
       <p className="summary">{summary}</p>
       <p className="disclaimer-note">
-        Historical facts are grounded in available sources. Alternate consequences are
-        reasoned projections, not documented events.
+        Real history is grounded in available sources. The what-if parts are educated
+        guesses, not documented events.
       </p>
     </header>
   );

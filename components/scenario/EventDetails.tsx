@@ -16,18 +16,18 @@ export function EventDetailsPanel({
   return (
     <div className="event-details">
       <section className="detail-block">
-        <h4>Direct consequence</h4>
+        <h4>What happens first</h4>
         <p>{details.directConsequence}</p>
       </section>
 
       <section className="detail-block">
-        <h4>Institutional response</h4>
+        <h4>Who reacts</h4>
         <p>{details.institutionalResponse}</p>
       </section>
 
       {details.secondOrderEffects.length > 0 && (
         <section className="detail-block">
-          <h4>Second-order effects</h4>
+          <h4>What follows</h4>
           <ul>
             {details.secondOrderEffects.map((item) => (
               <li key={item}>{item}</li>
@@ -61,7 +61,7 @@ export function EventDetailsPanel({
 
       {details.whatRemainsUnchanged.length > 0 && (
         <section className="detail-block">
-          <h4>What remains unchanged</h4>
+          <h4>What stays the same</h4>
           <ul>
             {details.whatRemainsUnchanged.map((item) => (
               <li key={item}>{item}</li>
@@ -72,7 +72,7 @@ export function EventDetailsPanel({
 
       {details.uncertainties.length > 0 && (
         <section className="detail-block">
-          <h4>Uncertainties</h4>
+          <h4>What's unclear</h4>
           <ul>
             {details.uncertainties.map((item) => (
               <li key={item}>{item}</li>
@@ -82,7 +82,7 @@ export function EventDetailsPanel({
       )}
 
       <section className="detail-block">
-        <h4>Historical logic</h4>
+        <h4>Why this makes sense</h4>
         <p>{details.historicalLogic}</p>
       </section>
 

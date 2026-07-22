@@ -5,8 +5,8 @@ export function AlternateOutcomes({ outcomes }: { outcomes: AlternateOutcome[] }
 
   return (
     <section className="content-card" aria-labelledby="alternate-outcomes-heading">
-      <span className="card-eyebrow">Branching possibilities</span>
-      <h2 id="alternate-outcomes-heading">Alternate outcomes</h2>
+      <span className="card-eyebrow">Other paths</span>
+      <h2 id="alternate-outcomes-heading">Other ways it could go</h2>
       <div className="outcome-grid">
         {outcomes.map((outcome) => (
           <article key={outcome.title} className="outcome-card">

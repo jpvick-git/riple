@@ -3,7 +3,7 @@ export function CoreAssumptionsCard({ assumptions }: { assumptions: string[] }) 
 
   return (
     <div className="sidebar-card">
-      <span>Core assumptions</span>
+      <span>What we're assuming</span>
       <ul>
         {assumptions.map((assumption) => (
           <li key={assumption}>{assumption}</li>

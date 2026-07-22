@@ -18,7 +18,8 @@ import { eventCountForDepth } from "@/lib/types";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const FOUNDATION_TIMEOUT_MS = 40_000;
+/** Foundation is the largest Stage-1 payload; keep under maxDuration with headroom. */
+const FOUNDATION_TIMEOUT_MS = 55_000;
 
 const SYSTEM_PROMPT = `You build a fast alternate-history foundation for Riple.
 
@@ -31,8 +32,17 @@ Return only a concise Stage 1 foundation:
 
 Do NOT include detailed event analysis, winners/losers, alternate outcomes, final-world essays, or sources.
 
+Writing style (critical):
+- Write for a curious everyday reader, not a historian or academic
+- Use plain, conversational English a high-school student could follow
+- Prefer short, concrete sentences over abstract theory
+- Avoid jargon, Latinate hedging, and PhD-sounding phrases (e.g. "structural forces," "contingent cascade," "catalytic," "institutional frameworks," "great-person fallacy")
+- Say what happens and why in simple terms; explain ideas instead of naming concepts
+- Sound like a smart friend telling a story, not a research paper
+- Even for fields named structuralForces / keyConditions / importantActors: fill them with plain everyday wording (money, wars, jobs, tech, fame, laws) — never jargon labels
+
 Rules:
-- Systems adapt; avoid great-person fallacy
+- Systems and incentives matter more than one heroic person
 - Later events should be less certain
 - Each event summary: 2 to 4 sentences
 - Each event must add something new

@@ -27,6 +27,15 @@ For each requested event return:
 - toneNote (usually null; rare restrained humor only)
 - sourceRefs (ids only if known; otherwise empty)
 
+Writing style (critical):
+- Write for a curious everyday reader, not a historian or academic
+- Use plain, conversational English a high-school student could follow
+- Prefer short, concrete sentences over abstract theory
+- Avoid jargon and PhD-sounding phrases (e.g. "structural," "contingent," "catalytic," "institutional frameworks," "path dependence")
+- Explain what people, companies, or governments actually do — not concepts
+- historicalLogic should sound like common-sense cause and effect, not a thesis defense
+- Sound like a smart friend telling a story, not a research paper
+
 Keep each prose field to 1-3 sentences. No markdown. No URLs in prose. Do not invent sources.`;
 
 export async function POST(request: Request) {

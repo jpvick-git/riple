@@ -22,6 +22,14 @@ Return:
 - 2 to 4 alternateOutcomes with probability labels
 - finalState across politics, culture, economics, technology, dailyLife, globalEffects
 
+Writing style (critical):
+- Write for a curious everyday reader, not a historian or academic
+- Use plain, conversational English a high-school student could follow
+- Prefer short, concrete sentences over abstract theory
+- Avoid jargon and PhD-sounding phrases
+- Describe how ordinary life, money, tech, and power actually feel different
+- Sound like a smart friend wrapping up a story, not a research paper
+
 Keep each field to 1-3 sentences. No markdown. No URLs. Uncertainty should increase for long-range claims.`;
 
 export async function POST(request: Request) {
