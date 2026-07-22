@@ -117,7 +117,7 @@ a { color: inherit; text-decoration: none; }
 .animated-wordmark-lockup {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 3vw, 28px);
+  gap: clamp(2px, 0.6vw, 8px);
   opacity: 0;
   transform: translateY(8px);
   animation: aw-reveal 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s forwards;
@@ -220,6 +220,7 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -0.01em;
   color: #f4f5fa;
   line-height: 1;
+  margin-left: -0.08em;
 }
 
 .animated-wordmark-i {
@@ -230,19 +231,29 @@ a { color: inherit; text-decoration: none; }
 .animated-wordmark-idot {
   position: absolute;
   left: 50%;
-  top: -0.66em;
-  width: 0.19em;
-  height: 0.19em;
+  /* Sit just above the lowercase stem (not above the full em box) */
+  bottom: 0.72em;
+  width: 0.16em;
+  height: 0.16em;
   border-radius: 50%;
   transform: translateX(-50%) scale(1);
   background: radial-gradient(circle at 35% 35%, #7dd3fc, #38bdf8);
-  animation: aw-core 2.6s ease-in-out infinite;
+  animation: aw-idot 2.6s ease-in-out infinite;
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+}
+
+@keyframes aw-idot {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  10%      { transform: translateX(-50%) scale(1.18); }
+  22%      { transform: translateX(-50%) scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .aw-arc, .aw-ghost, .aw-core, .aw-branch, .aw-node, .animated-wordmark-idot {
     animation: none;
+  }
+  .animated-wordmark-idot {
+    transform: translateX(-50%);
   }
   .aw-branch {
     stroke-dasharray: none;
