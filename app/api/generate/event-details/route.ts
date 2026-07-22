@@ -3,6 +3,7 @@ import { saveEventDetailsCache } from "@/lib/cache";
 import { normalizeEventDetailPayload } from "@/lib/normalizeScenario";
 import { createStructuredResponse, getDeepModel, isTimeoutError } from "@/lib/openai";
 import { getClientIp } from "@/lib/requestMeta";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { eventDetailsJsonSchema, eventDetailsResponseSchema, generationDepths } from "@/lib/scenarioSchema";
 import { recordTokenUsage } from "@/lib/tokenUsageRepository";
 import type { EventDetailPayload, GenerationDepth, TimelineEventOutline } from "@/lib/types";
@@ -40,6 +41,9 @@ Keep each prose field to 1-3 sentences. No markdown. No URLs in prose. Do not in
 
 export async function POST(request: Request) {
   const ipAddress = getClientIp(request);
+
+  const limit = await checkRateLimit(ipAddress);
+  if (!limit.ok) return rateLimitResponse(limit);
 
   try {
     if (!process.env.OPENAI_API_KEY) {

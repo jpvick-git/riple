@@ -20,8 +20,7 @@ import type {
   EventDetailPayload,
   PendingScenarioShell,
   Scenario,
-  ScenarioConclusion,
-  ScenarioSource
+  ScenarioConclusion
 } from "@/lib/types";
 
 function compactContext(scenario: Scenario) {
@@ -254,28 +253,11 @@ export function useProgressiveScenario(slug: string) {
       if (controller.signal.aborted) return;
 
       if (current.generation.sources !== "complete") {
-        current = {
-          ...current,
-          generation: { ...current.generation, sources: "loading" }
-        };
+        // Source generation is disabled: sources aren't surfaced in the UI, and the
+        // web-search call spends tokens for nothing. Mark complete without a request
+        // so scenario completion/persistence logic still resolves.
+        current = mergeSources(current, current.sources ?? []);
         persist(current);
-        try {
-          const context = compactContext(current);
-          const result = await fetchJson<{ sources: ScenarioSource[] }>(
-            "/api/generate/sources",
-            context,
-            controller.signal
-          );
-          current = mergeSources(current, result.sources ?? []);
-          persist(current);
-        } catch {
-          current = {
-            ...current,
-            generation: { ...current.generation, sources: "failed" },
-            sources: current.sources
-          };
-          persist(current);
-        }
       }
 
       setDeepStatus("");

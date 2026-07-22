@@ -72,7 +72,7 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
           <button type="button" onClick={shareScenario}>
             <Share2 size={16} /> Share
           </button>
-          <button type="button" title="Branch generation is the next feature">
+          <button type="button" disabled aria-disabled title="Branch generation is coming soon">
             <GitBranch size={16} /> Branch
           </button>
         </div>

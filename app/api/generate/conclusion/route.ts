@@ -3,6 +3,7 @@ import { saveConclusionCache } from "@/lib/cache";
 import { sanitizeProse } from "@/lib/sources";
 import { createStructuredResponse, getDeepModel, isTimeoutError } from "@/lib/openai";
 import { getClientIp } from "@/lib/requestMeta";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import {
   generationDepths,
   scenarioConclusionJsonSchema,
@@ -34,6 +35,9 @@ Keep each field to 1-3 sentences. No markdown. No URLs. Uncertainty should incre
 
 export async function POST(request: Request) {
   const ipAddress = getClientIp(request);
+
+  const limit = await checkRateLimit(ipAddress);
+  if (!limit.ok) return rateLimitResponse(limit);
 
   try {
     if (!process.env.OPENAI_API_KEY) {

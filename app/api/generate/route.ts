@@ -10,6 +10,7 @@ import {
 } from "@/lib/openai";
 import { createFoundationJsonSchema, createFoundationSchema, generationDepths } from "@/lib/scenarioSchema";
 import { getClientIp } from "@/lib/requestMeta";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import { getScenarioByPromptHash, saveScenario } from "@/lib/scenarioRepository";
 import { recordTokenUsage } from "@/lib/tokenUsageRepository";
 import type { GenerationDepth, Scenario } from "@/lib/types";
@@ -84,6 +85,9 @@ async function returnCachedFoundation(
 
 export async function POST(request: Request) {
   const ipAddress = getClientIp(request);
+
+  const limit = await checkRateLimit(ipAddress);
+  if (!limit.ok) return rateLimitResponse(limit);
 
   try {
     if (!process.env.OPENAI_API_KEY) {

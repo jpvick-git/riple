@@ -3,6 +3,7 @@ import { saveSourcesCache } from "@/lib/cache";
 import { normalizeSources } from "@/lib/normalizeScenario";
 import { createStructuredResponse, getFastModel, isTimeoutError } from "@/lib/openai";
 import { getClientIp } from "@/lib/requestMeta";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rateLimit";
 import {
   generationDepths,
   scenarioSourcesJsonSchema,
@@ -18,6 +19,9 @@ const SOURCES_TIMEOUT_MS = 45_000;
 
 export async function POST(request: Request) {
   const ipAddress = getClientIp(request);
+
+  const limit = await checkRateLimit(ipAddress);
+  if (!limit.ok) return rateLimitResponse(limit);
 
   try {
     if (!process.env.OPENAI_API_KEY) {
