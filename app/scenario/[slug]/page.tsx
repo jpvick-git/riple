@@ -11,6 +11,7 @@ import { ScenarioError } from "@/components/scenario/ScenarioError";
 import { ScenarioHeader } from "@/components/scenario/ScenarioHeader";
 import { ScenarioSidebar } from "@/components/scenario/ScenarioSidebar";
 import { SourcesList } from "@/components/scenario/SourcesList";
+import { TimelineGlance } from "@/components/scenario/TimelineGlance";
 import { useProgressiveScenario } from "@/lib/useProgressiveScenario";
 
 interface ScenarioPageProps {
@@ -89,20 +90,17 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
           </div>
         ) : null}
 
-        <ScenarioHeader
-          title={scenario.title}
-          prompt={scenario.prompt}
-          summary={scenario.summary}
-        />
-
         <section className="scenario-layout">
-          <ScenarioSidebar scenario={scenario} />
+          <div className="scenario-rail">
+            <ScenarioHeader
+              title={scenario.title}
+              summary={scenario.summary}
+            />
+            <ScenarioSidebar scenario={scenario} />
+          </div>
 
           <div className="timeline-panel">
-            <div className="section-heading">
-              <span>Generated consequences</span>
-              <h2>Riple Timeline</h2>
-            </div>
+            <TimelineGlance scenario={scenario} />
             <Timeline
               events={scenario.timeline}
               sources={scenario.sources}
