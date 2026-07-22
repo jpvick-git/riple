@@ -8,12 +8,17 @@ type BrandLogoProps = {
   priority?: boolean;
 };
 
+/** Single clean logo export — avoid stale sheet crops */
+const LOGO = {
+  src: "/brand/riple-logo.png",
+  alt: "Riple",
+  width: 546,
+  height: 229
+} as const;
+
 const VARIANTS = {
   wordmark: {
-    src: "/brand/logo-wordmark.png",
-    alt: "Riple",
-    width: 530,
-    height: 213,
+    ...LOGO,
     className: "brand-logo brand-logo-wordmark"
   },
   mark: {
@@ -24,10 +29,7 @@ const VARIANTS = {
     className: "brand-logo brand-logo-mark"
   },
   hero: {
-    src: "/brand/logo-hero.png",
-    alt: "Riple",
-    width: 530,
-    height: 213,
+    ...LOGO,
     className: "brand-logo brand-logo-hero"
   }
 } as const;
