@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,7 +10,21 @@ export const metadata: Metadata = {
       { url: "/brand/icon-192.png", sizes: "192x192", type: "image/png" }
     ],
     apple: [{ url: "/brand/icon-180.png", sizes: "180x180", type: "image/png" }]
+  },
+  formatDetection: {
+    telephone: false
   }
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#07090f" },
+    { media: "(prefers-color-scheme: light)", color: "#07090f" }
+  ],
+  colorScheme: "dark"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
