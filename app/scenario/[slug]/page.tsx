@@ -10,7 +10,6 @@ import { LoadingScenario } from "@/components/scenario/LoadingScenario";
 import { ScenarioError } from "@/components/scenario/ScenarioError";
 import { ScenarioHeader } from "@/components/scenario/ScenarioHeader";
 import { ScenarioSidebar } from "@/components/scenario/ScenarioSidebar";
-import { SourcesList } from "@/components/scenario/SourcesList";
 import { useProgressiveScenario } from "@/lib/useProgressiveScenario";
 
 interface ScenarioPageProps {
@@ -130,15 +129,6 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
             ) : null}
             {scenario.finalState ? (
               <FinalWorldState finalState={scenario.finalState} />
-            ) : null}
-            {scenario.generation.sources === "complete" || scenario.sources.length > 0 ? (
-              <SourcesList sources={scenario.sources} />
-            ) : scenario.generation.sources === "loading" ? (
-              <section className="content-card section-loading">
-                <span className="card-eyebrow">References</span>
-                <h2>Sources</h2>
-                <p className="muted-copy">Gathering references…</p>
-              </section>
             ) : null}
           </div>
         </section>
