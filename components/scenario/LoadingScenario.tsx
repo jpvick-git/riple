@@ -45,9 +45,6 @@ export function LoadingScenario({
       <p role="status" aria-live="polite">
         {status}…
       </p>
-      <p className="muted-copy">
-        The first timeline usually appears within about 10 seconds.
-      </p>
     </main>
   );
 }
