@@ -130,6 +130,12 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
             {scenario.finalState ? (
               <FinalWorldState finalState={scenario.finalState} />
             ) : null}
+
+            <p className="scenario-disclaimer">
+              This is an AI-generated thought experiment. Real historical facts are drawn
+              from general knowledge, but everything after the change is imagined
+              speculation, not a prediction or a record of real events.
+            </p>
           </div>
         </section>
       </div>

@@ -637,10 +637,20 @@ a { color: inherit; text-decoration: none; }
   gap: var(--section-gap);
 }
 
-.timeline-panel > .content-card {
+.timeline-panel > .content-card,
+.scenario-disclaimer {
   margin-left: var(--timeline-gutter);
   width: calc(100% - var(--timeline-gutter));
   box-sizing: border-box;
+}
+
+.scenario-disclaimer {
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .85rem;
+  line-height: 1.6;
 }
 
 .sidebar-card {
@@ -1107,7 +1117,8 @@ input:disabled {
     --timeline-rail: 28px;
   }
 
-  .timeline-panel > .content-card {
+  .timeline-panel > .content-card,
+  .scenario-disclaimer {
     margin-left: 0;
     width: 100%;
   }
