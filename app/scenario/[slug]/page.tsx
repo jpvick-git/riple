@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, GitBranch, Share2 } from "lucide-react";
+import { ArrowLeft, Bookmark, BookmarkCheck, GitBranch, Share2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Timeline } from "@/components/Timeline";
 import { AlternateOutcomes } from "@/components/scenario/AlternateOutcomes";
@@ -10,6 +11,7 @@ import { LoadingScenario } from "@/components/scenario/LoadingScenario";
 import { ScenarioError } from "@/components/scenario/ScenarioError";
 import { ScenarioHeader } from "@/components/scenario/ScenarioHeader";
 import { ScenarioSidebar } from "@/components/scenario/ScenarioSidebar";
+import { isRipleSaved, toggleSavedRiple } from "@/lib/savedRiples";
 import { useProgressiveScenario } from "@/lib/useProgressiveScenario";
 
 interface ScenarioPageProps {
@@ -29,21 +31,50 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
     retryFoundation,
     retryConclusion
   } = useProgressiveScenario(params.slug);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setSaved(isRipleSaved(params.slug));
+  }, [params.slug]);
 
   async function shareScenario() {
     if (!scenario) return;
+    const url = window.location.href;
     const text = `${scenario.title}\n${scenario.prompt}`;
-    if (navigator.share) {
-      await navigator.share({ title: scenario.title, text });
-    } else {
-      await navigator.clipboard.writeText(text);
-      window.alert("Scenario summary copied to your clipboard.");
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: scenario.title, text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      window.alert("Riple link copied to your clipboard.");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(url);
+        window.alert("Riple link copied to your clipboard.");
+      } catch {
+        window.alert("Could not share this riple. Copy the page URL from your browser.");
+      }
     }
+  }
+
+  function handleSaveToggle() {
+    if (!scenario) return;
+    const result = toggleSavedRiple({
+      id: scenario.id,
+      title: scenario.title,
+      prompt: scenario.prompt,
+      summary: scenario.summary,
+      depth: scenario.depth
+    });
+    setSaved(result.saved);
+    window.dispatchEvent(new Event("riple:saved-changed"));
   }
 
   if (missing) {
     return (
-      <ScenarioError message="This riple is no longer in this browser session. Generate it again from the home page." />
+      <ScenarioError message="This riple could not be found. It may have expired, or the link may be incomplete. Generate it again from the home page." />
     );
   }
 
@@ -69,7 +100,16 @@ export default function ScenarioPage({ params }: ScenarioPageProps) {
         </Link>
         <BrandLogo variant="wordmark" />
         <div className="nav-actions">
-          <button type="button" onClick={shareScenario}>
+          <button
+            type="button"
+            onClick={handleSaveToggle}
+            aria-pressed={saved}
+            title={saved ? "Remove from saved riples" : "Save this riple for later"}
+          >
+            {saved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+            {saved ? "Saved" : "Save"}
+          </button>
+          <button type="button" onClick={() => void shareScenario()}>
             <Share2 size={16} /> Share
           </button>
           <button type="button" disabled aria-disabled title="Branch generation is coming soon">

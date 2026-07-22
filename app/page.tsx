@@ -1,5 +1,6 @@
 import { AnimatedWordmark } from "@/components/AnimatedWordmark";
 import { BrandLogo } from "@/components/BrandLogo";
+import { SavedRiplesNavLink } from "@/components/SavedRiplesNavLink";
 import { ScenarioForm } from "@/components/ScenarioForm";
 
 export default function HomePage() {
@@ -7,6 +8,7 @@ export default function HomePage() {
     <main>
       <nav className="nav-shell">
         <BrandLogo variant="wordmark" priority />
+        <SavedRiplesNavLink />
       </nav>
 
       <section className="hero">
