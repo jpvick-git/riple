@@ -1,5 +1,5 @@
 import { ensureSchema, isDatabaseConfigured, query } from "@/lib/db";
-import { hashPrompt } from "@/lib/openai";
+import { createScenarioId, hashPrompt, isLegacyScenarioId } from "@/lib/openai";
 import type { Scenario } from "@/lib/types";
 
 type ScenarioRow = {
@@ -10,8 +10,36 @@ type ScenarioRow = {
   data: Scenario;
 };
 
+async function migrateLegacyScenarioId(scenario: Scenario): Promise<Scenario> {
+  if (!isLegacyScenarioId(scenario.id)) return scenario;
+
+  const newId = createScenarioId();
+  const updated: Scenario = { ...scenario, id: newId };
+
+  try {
+    await query(
+      `
+        UPDATE scenarios
+        SET id = $1, data = $2::jsonb, updated_at = NOW()
+        WHERE id = $3
+      `,
+      [newId, JSON.stringify(updated), scenario.id]
+    );
+    await query(`UPDATE token_usage SET scenario_id = $1 WHERE scenario_id = $2`, [
+      newId,
+      scenario.id
+    ]);
+    console.info(`[scenarios] migrated legacy id ${scenario.id} -> ${newId}`);
+  } catch (error) {
+    console.error("Failed to migrate legacy scenario id:", error);
+    return scenario;
+  }
+
+  return updated;
+}
+
 async function backfillPromptHash(row: ScenarioRow): Promise<Scenario> {
-  const scenario = { ...row.data, id: row.id };
+  const scenario = await migrateLegacyScenarioId({ ...row.data, id: row.id });
   if (row.prompt_hash) return scenario;
 
   const prompt = scenario.prompt || row.prompt;
@@ -25,7 +53,7 @@ async function backfillPromptHash(row: ScenarioRow): Promise<Scenario> {
         SET prompt_hash = $1
         WHERE id = $2 AND prompt_hash IS NULL
       `,
-      [promptHash, row.id]
+      [promptHash, scenario.id]
     );
   } catch (error) {
     console.error("Failed to backfill prompt_hash:", error);
@@ -87,7 +115,7 @@ export async function getScenarioByPromptHash(promptHash: string): Promise<Scena
   );
 
   const row = result.rows[0];
-  if (row) return { ...row.data, id: row.id };
+  if (row) return backfillPromptHash(row);
 
   // Fallback for rows not yet backfilled: scan recent rows (small corpora).
   const legacy = await query<ScenarioRow>(

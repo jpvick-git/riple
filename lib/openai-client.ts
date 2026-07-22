@@ -1,18 +1,6 @@
-import type { GenerationDepth } from "@/lib/types";
-
-/** Browser-safe slug helper (no Node crypto). */
-export function createSlug(question: string) {
-  return (
-    question
-      .toLowerCase()
-      .replace(/^what if\s+/i, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 70) || "new-riple"
-  );
-}
-
-/** Canonical scenario id: prompt slug + depth (avoids depth collisions). */
-export function createScenarioId(question: string, depth: GenerationDepth | string) {
-  return `${createSlug(question)}--${depth}`;
+/** Opaque 64-char hex id — not derived from the prompt, so URLs can't be guessed. */
+export function createScenarioId() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }

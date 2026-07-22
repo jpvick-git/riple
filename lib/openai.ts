@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import OpenAI from "openai";
 
 export function getFastModel() {
@@ -23,20 +23,14 @@ export function createRequestId() {
   return randomUUID().slice(0, 8);
 }
 
-export function createSlug(question: string) {
-  return (
-    question
-      .toLowerCase()
-      .replace(/^what if\s+/i, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 70) || "new-riple"
-  );
+/** Opaque 64-char hex id — not derived from the prompt, so URLs can't be guessed. */
+export function createScenarioId() {
+  return randomBytes(32).toString("hex");
 }
 
-/** Canonical scenario id: prompt slug + depth (avoids depth collisions). */
-export function createScenarioId(question: string, depth: string) {
-  return `${createSlug(question)}--${depth}`;
+/** Old prompt-slug--depth ids that leaked the question into the URL. */
+export function isLegacyScenarioId(id: string) {
+  return /--(?:quick|standard|deep)$/i.test(id);
 }
 
 export function normalizePromptForCache(prompt: string) {

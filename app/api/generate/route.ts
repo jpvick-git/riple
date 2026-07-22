@@ -97,6 +97,8 @@ export async function POST(request: Request) {
     const question = typeof body.question === "string" ? body.question.trim() : "";
     const depth = (generationDepths.includes(body.depth) ? body.depth : "standard") as GenerationDepth;
     const requestedId = typeof body.id === "string" ? body.id.trim() : "";
+    // Only accept opaque client ids; reject guessable legacy slug--depth forms.
+    const safeRequestedId = /^[a-f0-9]{64}$/i.test(requestedId) ? requestedId : "";
 
     if (question.length < 8 || question.length > 500) {
       return NextResponse.json(
@@ -120,7 +122,7 @@ export async function POST(request: Request) {
     const memoryCached = getCachedScenario(question, depth);
     if (memoryCached?.foundation) {
       const canonicalId =
-        memoryCached.foundation.id || requestedId || createScenarioId(question, depth);
+        memoryCached.foundation.id || safeRequestedId || createScenarioId();
       const hydrated = applyCacheToScenario({
         ...memoryCached.foundation,
         id: canonicalId,
@@ -130,7 +132,7 @@ export async function POST(request: Request) {
       return returnCachedFoundation(hydrated, ipAddress, "memory");
     }
 
-    const id = requestedId || createScenarioId(question, depth);
+    const id = safeRequestedId || createScenarioId();
     const counts = eventCountForDepth(depth);
     const model = getFastModel();
     const { data, durationMs, usage, requestId } = await createStructuredResponse<{

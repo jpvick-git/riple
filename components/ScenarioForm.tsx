@@ -70,7 +70,7 @@ export function ScenarioForm() {
         console.error("Scenario lookup failed:", lookupError);
       }
 
-      const id = createScenarioId(cleanQuestion, depth);
+      const id = createScenarioId();
       const shell = createPendingShell(id, cleanQuestion, depth);
       saveScenarioLocal(shell);
       router.push(`/scenario/${id}`);
