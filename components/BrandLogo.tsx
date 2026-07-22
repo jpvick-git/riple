@@ -12,22 +12,22 @@ const VARIANTS = {
   wordmark: {
     src: "/brand/logo-wordmark.png",
     alt: "Riple",
-    width: 1007,
-    height: 262,
+    width: 530,
+    height: 213,
     className: "brand-logo brand-logo-wordmark"
   },
   mark: {
     src: "/brand/logo-mark.png",
     alt: "Riple",
-    width: 616,
-    height: 486,
+    width: 191,
+    height: 157,
     className: "brand-logo brand-logo-mark"
   },
   hero: {
     src: "/brand/logo-hero.png",
-    alt: "Riple — One change. Infinite outcomes.",
-    width: 1007,
-    height: 335,
+    alt: "Riple",
+    width: 530,
+    height: 213,
     className: "brand-logo brand-logo-hero"
   }
 } as const;
