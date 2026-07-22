@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { RipleLoader } from "@/components/RipleLoader";
 
 const FOUNDATION_MESSAGES = [
   "Finding the point of divergence",
@@ -9,6 +10,8 @@ const FOUNDATION_MESSAGES = [
   "Tracing the first consequences",
   "Building the initial timeline"
 ];
+
+const MESSAGE_INTERVAL_MS = 4600;
 
 export function LoadingScenario({
   compact = false,
@@ -22,7 +25,7 @@ export function LoadingScenario({
   useEffect(() => {
     const statusTimer = window.setInterval(() => {
       setIndex((current) => (current + 1) % FOUNDATION_MESSAGES.length);
-    }, 2200);
+    }, MESSAGE_INTERVAL_MS);
     return () => window.clearInterval(statusTimer);
   }, []);
 
@@ -41,8 +44,8 @@ export function LoadingScenario({
 
   return (
     <main className="state-page">
-      <BrandLogo variant="mark" href={null} className="brand-logo-loading spin-soft" />
-      <p role="status" aria-live="polite">
+      <RipleLoader className="riple-loader-lg" />
+      <p key={status} className="loading-status-text" role="status" aria-live="polite">
         {status}…
       </p>
     </main>
