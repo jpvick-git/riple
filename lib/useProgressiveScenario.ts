@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   isDeepAnalysisPending,
+  isScenarioComplete,
   markEventDetailStatus,
   mergeConclusion,
   mergeEventDetails,
@@ -77,6 +79,7 @@ function chunkIds(ids: string[], size: number) {
 }
 
 export function useProgressiveScenario(slug: string) {
+  const router = useRouter();
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [pending, setPending] = useState<PendingScenarioShell | null>(null);
   const [missing, setMissing] = useState(false);
@@ -98,6 +101,15 @@ export function useProgressiveScenario(slug: string) {
     });
   }, []);
 
+  const adoptCanonicalId = useCallback(
+    (scenario: Scenario, fromSlug: string) => {
+      if (scenario.id === fromSlug) return;
+      saveScenarioLocal(scenario);
+      router.replace(`/scenario/${scenario.id}`);
+    },
+    [router]
+  );
+
   const loadFoundation = useCallback(
     async (shell: PendingScenarioShell) => {
       setFoundationError("");
@@ -108,6 +120,7 @@ export function useProgressiveScenario(slug: string) {
           depth: shell.depth,
           id: shell.id
         });
+        adoptCanonicalId(foundation, shell.id);
         persist(foundation);
         setPending(null);
         return foundation;
@@ -122,7 +135,7 @@ export function useProgressiveScenario(slug: string) {
         return null;
       }
     },
-    [persist]
+    [adoptCanonicalId, persist]
   );
 
   const fetchEventDetails = useCallback(
@@ -278,7 +291,7 @@ export function useProgressiveScenario(slug: string) {
     }
     if (needsFoundation(stored)) {
       const foundation = await loadFoundation(asPendingShell(stored));
-      if (foundation) {
+      if (foundation && !isScenarioComplete(foundation)) {
         deepenStartedRef.current = false;
         void deepen(foundation);
       }
@@ -321,7 +334,9 @@ export function useProgressiveScenario(slug: string) {
 
       if (stored && needsFoundation(stored)) {
         const foundation = await loadFoundation(asPendingShell(stored));
-        if (!cancelled && foundation) void deepen(foundation);
+        if (!cancelled && foundation && !isScenarioComplete(foundation)) {
+          void deepen(foundation);
+        }
         return;
       }
 
@@ -373,9 +388,10 @@ export function useProgressiveScenario(slug: string) {
         }
       };
 
+      adoptCanonicalId(hydrated, slug);
       setScenario(hydrated);
       saveScenarioLocal(hydrated);
-      if (isDeepAnalysisPending(hydrated)) {
+      if (!isScenarioComplete(hydrated) && isDeepAnalysisPending(hydrated)) {
         void deepen(hydrated);
       }
     }
@@ -386,7 +402,7 @@ export function useProgressiveScenario(slug: string) {
       cancelled = true;
       abortRef.current?.abort();
     };
-  }, [deepen, loadFoundation, slug]);
+  }, [adoptCanonicalId, deepen, loadFoundation, slug]);
 
   return {
     scenario,

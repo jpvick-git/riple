@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { applyCacheToScenario, getCachedScenario, saveFoundationCache } from "@/lib/cache";
 import { foundationToScenario } from "@/lib/normalizeScenario";
-import { createStructuredResponse, createSlug, isTimeoutError } from "@/lib/openai";
+import {
+  createScenarioId,
+  createStructuredResponse,
+  getFastModel,
+  hashPrompt,
+  isTimeoutError
+} from "@/lib/openai";
 import { createFoundationJsonSchema, createFoundationSchema, generationDepths } from "@/lib/scenarioSchema";
-import { getFastModel } from "@/lib/openai";
 import { getClientIp } from "@/lib/requestMeta";
-import { saveScenario } from "@/lib/scenarioRepository";
+import { getScenarioByPromptHash, saveScenario } from "@/lib/scenarioRepository";
 import { recordTokenUsage } from "@/lib/tokenUsageRepository";
-import type { GenerationDepth } from "@/lib/types";
+import type { GenerationDepth, Scenario } from "@/lib/types";
 import { eventCountForDepth } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -35,6 +40,38 @@ Rules:
 - Preserve the exact user prompt
 - Use the supplied id exactly`;
 
+async function recordCacheHit(scenarioId: string, ipAddress: string) {
+  try {
+    await recordTokenUsage({
+      scenarioId,
+      ipAddress,
+      route: "foundation",
+      model: "cache",
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+      cached: true
+    });
+  } catch (error) {
+    console.error("Failed to record cached token usage:", error);
+  }
+}
+
+async function returnCachedFoundation(
+  scenario: Scenario,
+  ipAddress: string,
+  source: "postgres" | "memory"
+) {
+  try {
+    await saveScenario(scenario);
+  } catch (error) {
+    console.error("Failed to persist cached foundation:", error);
+  }
+  await recordCacheHit(scenario.id, ipAddress);
+  console.info(
+    `[generate:foundation] id=${scenario.id} cached=true source=${source}`
+  );
+  return NextResponse.json(scenario);
+}
+
 export async function POST(request: Request) {
   const ipAddress = getClientIp(request);
 
@@ -58,35 +95,32 @@ export async function POST(request: Request) {
       );
     }
 
-    const id = requestedId || createSlug(question);
-    const cached = getCachedScenario(question, depth);
-    if (cached?.foundation) {
+    const promptHash = hashPrompt(question, depth);
+
+    try {
+      const existing = await getScenarioByPromptHash(promptHash);
+      if (existing?.generation?.foundation === "complete") {
+        const hydrated = applyCacheToScenario(existing);
+        return returnCachedFoundation(hydrated, ipAddress, "postgres");
+      }
+    } catch (error) {
+      console.error("Postgres prompt_hash lookup failed:", error);
+    }
+
+    const memoryCached = getCachedScenario(question, depth);
+    if (memoryCached?.foundation) {
+      const canonicalId =
+        memoryCached.foundation.id || requestedId || createScenarioId(question, depth);
       const hydrated = applyCacheToScenario({
-        ...cached.foundation,
-        id,
+        ...memoryCached.foundation,
+        id: canonicalId,
         prompt: question,
         depth
       });
-      try {
-        await saveScenario(hydrated);
-      } catch (error) {
-        console.error("Failed to persist cached foundation:", error);
-      }
-      try {
-        await recordTokenUsage({
-          scenarioId: id,
-          ipAddress,
-          route: "foundation",
-          model: "cache",
-          usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
-          cached: true
-        });
-      } catch (error) {
-        console.error("Failed to record cached token usage:", error);
-      }
-      return NextResponse.json({ ...hydrated, cached: true });
+      return returnCachedFoundation(hydrated, ipAddress, "memory");
     }
 
+    const id = requestedId || createScenarioId(question, depth);
     const counts = eventCountForDepth(depth);
     const model = getFastModel();
     const { data, durationMs, usage, requestId } = await createStructuredResponse<{

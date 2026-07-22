@@ -121,6 +121,53 @@ npm run build
 pm2 restart riple
 ```
 
+## Daily usage email
+
+Riple can email you yesterday’s usage (new ripples, API requests, cache hits, tokens, top IPs).
+
+### 1. Resend
+
+1. Create a free account at [resend.com](https://resend.com)
+2. Create an API key
+3. For testing, send to the same address you signed up with using `onboarding@resend.dev`
+4. Later, verify `riple.me` in Resend and set `REPORT_FROM_EMAIL` to something like `Riple Reports <reports@riple.me>`
+
+### 2. Env on the droplet
+
+Add to `/var/www/riple/.env.local`:
+
+```env
+REPORT_EMAIL=you@example.com
+REPORT_FROM_EMAIL=Riple Reports <onboarding@resend.dev>
+REPORT_TZ=America/Chicago
+RESEND_API_KEY=re_xxxxxxxx
+CRON_SECRET=generate-a-long-random-string
+```
+
+Restart: `pm2 restart riple`
+
+### 3. Cron (once a day)
+
+Runs at 8:05 AM Chicago time (adjust as you like):
+
+```bash
+crontab -e
+```
+
+Add:
+
+```cron
+5 8 * * * curl -fsS -H "Authorization: Bearer YOUR_CRON_SECRET" https://riple.me/api/cron/daily-report >> /var/log/riple-daily-report.log 2>&1
+```
+
+If the server clock is UTC, use `5 13 * * *` for ~8:05 AM CDT, or install `tzdata` and set `CRON_TZ=America/Chicago` above the line.
+
+### 4. Test once
+
+```bash
+curl -fsS -H "Authorization: Bearer YOUR_CRON_SECRET" https://riple.me/api/cron/daily-report
+```
+
 ## Checklist
 
 - [ ] DNS A records for `@` and `www`
@@ -131,4 +178,5 @@ pm2 restart riple
 - [ ] PM2 shows `riple` online
 - [ ] `https://riple.me` loads
 - [ ] Create Riple works (API key valid)
+- [ ] Daily report env + crontab configured (optional)
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { createSlug } from "@/lib/openai-client";
+import { createScenarioId } from "@/lib/openai-client";
 import { createPendingShell, saveScenarioLocal } from "@/lib/scenarioStorage";
 import type { GenerationDepth } from "@/lib/types";
 
@@ -43,14 +43,34 @@ export function ScenarioForm() {
   const [error, setError] = useState("");
   const submittingRef = useRef(false);
 
-  function startRiple(cleanQuestion: string) {
+  async function startRiple(cleanQuestion: string) {
     if (submittingRef.current || isGenerating) return;
     submittingRef.current = true;
     setIsGenerating(true);
     setError("");
 
     try {
-      const id = createSlug(cleanQuestion);
+      try {
+        const lookupResponse = await fetch("/api/scenarios/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: cleanQuestion, depth })
+        });
+        if (lookupResponse.ok) {
+          const lookup = (await lookupResponse.json()) as {
+            id: string;
+            complete: boolean;
+          };
+          if (lookup.id) {
+            router.push(`/scenario/${lookup.id}`);
+            return;
+          }
+        }
+      } catch (lookupError) {
+        console.error("Scenario lookup failed:", lookupError);
+      }
+
+      const id = createScenarioId(cleanQuestion, depth);
       const shell = createPendingShell(id, cleanQuestion, depth);
       saveScenarioLocal(shell);
       router.push(`/scenario/${id}`);
@@ -67,7 +87,7 @@ export function ScenarioForm() {
     event.preventDefault();
     const cleanQuestion = question.trim();
     if (!cleanQuestion) return;
-    startRiple(cleanQuestion);
+    void startRiple(cleanQuestion);
   }
 
   return (

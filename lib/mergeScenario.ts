@@ -111,3 +111,12 @@ export function isDeepAnalysisPending(scenario: Scenario) {
 
   return detailsPending || conclusionPending || sourcesPending;
 }
+
+/** Fully generated riple eligible for cross-user reuse (no further AI). */
+export function isScenarioComplete(scenario: Scenario) {
+  if (scenario.generation.foundation !== "complete") return false;
+  if (scenario.generation.conclusion !== "complete" || !scenario.finalState) return false;
+  if (scenario.generation.sources !== "complete") return false;
+  if (scenario.depth === "quick") return true;
+  return scenario.timeline.every((event) => event.detailState === "ready");
+}

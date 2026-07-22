@@ -45,14 +45,24 @@ export async function ensureSchema() {
           id TEXT PRIMARY KEY,
           prompt TEXT NOT NULL,
           depth TEXT NOT NULL DEFAULT 'standard',
+          prompt_hash TEXT,
           data JSONB NOT NULL,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
       `);
       await query(`
+        ALTER TABLE scenarios
+        ADD COLUMN IF NOT EXISTS prompt_hash TEXT;
+      `);
+      await query(`
         CREATE INDEX IF NOT EXISTS scenarios_updated_at_idx
         ON scenarios (updated_at DESC);
+      `);
+      await query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS scenarios_prompt_hash_uidx
+        ON scenarios (prompt_hash)
+        WHERE prompt_hash IS NOT NULL;
       `);
       await query(`
         CREATE TABLE IF NOT EXISTS token_usage (

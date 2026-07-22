@@ -34,6 +34,11 @@ export function createSlug(question: string) {
   );
 }
 
+/** Canonical scenario id: prompt slug + depth (avoids depth collisions). */
+export function createScenarioId(question: string, depth: string) {
+  return `${createSlug(question)}--${depth}`;
+}
+
 export function normalizePromptForCache(prompt: string) {
   return prompt.trim().replace(/\s+/g, " ").toLowerCase();
 }
