@@ -72,7 +72,7 @@ export function EventDetailsPanel({
 
       {details.uncertainties.length > 0 && (
         <section className="detail-block">
-          <h4>What's unclear</h4>
+          <h4>What&apos;s unclear</h4>
           <ul>
             {details.uncertainties.map((item) => (
               <li key={item}>{item}</li>
