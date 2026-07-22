@@ -55,12 +55,9 @@ export async function buildDailyUsageReport(
   }>(
     `
       SELECT
-        to_char(
-          (date_trunc('day', NOW() AT TIME ZONE $1) - INTERVAL '1 day'),
-          'YYYY-MM-DD'
-        ) AS day_label,
-        ((date_trunc('day', NOW() AT TIME ZONE $1) - INTERVAL '1 day') AT TIME ZONE $1) AS window_start,
-        (date_trunc('day', NOW() AT TIME ZONE $1) AT TIME ZONE $1) AS window_end
+        to_char(date_trunc('day', NOW() AT TIME ZONE $1), 'YYYY-MM-DD') AS day_label,
+        (date_trunc('day', NOW() AT TIME ZONE $1) AT TIME ZONE $1) AS window_start,
+        NOW() AS window_end
     `,
     [timeZone]
   );
