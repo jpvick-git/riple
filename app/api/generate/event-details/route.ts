@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { saveEventDetailsCache } from "@/lib/cache";
 import { normalizeEventDetailPayload } from "@/lib/normalizeScenario";
 import { createStructuredResponse, getDeepModel, isTimeoutError } from "@/lib/openai";
+import { getClientIp } from "@/lib/requestMeta";
 import { eventDetailsJsonSchema, eventDetailsResponseSchema, generationDepths } from "@/lib/scenarioSchema";
+import { recordTokenUsage } from "@/lib/tokenUsageRepository";
 import type { EventDetailPayload, GenerationDepth, TimelineEventOutline } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -28,6 +30,8 @@ For each requested event return:
 Keep each prose field to 1-3 sentences. No markdown. No URLs in prose. Do not invent sources.`;
 
 export async function POST(request: Request) {
+  const ipAddress = getClientIp(request);
+
   try {
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: "OPENAI_API_KEY is missing." }, { status: 500 });
@@ -35,6 +39,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
+    const scenarioId = typeof body.scenarioId === "string" ? body.scenarioId.trim() : "";
     const depth = (generationDepths.includes(body.depth) ? body.depth : "standard") as GenerationDepth;
     const eventIds = Array.isArray(body.eventIds)
       ? body.eventIds.filter((id: unknown): id is string => typeof id === "string").slice(0, 2)
@@ -56,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     const model = getDeepModel();
-    const { data } = await createStructuredResponse<{ events: EventDetailPayload[] }>({
+    const { data, usage, requestId } = await createStructuredResponse<{ events: EventDetailPayload[] }>({
       route: "generate:event-details",
       model,
       timeoutMs: DETAIL_TIMEOUT_MS,
@@ -89,6 +94,18 @@ export async function POST(request: Request) {
       .map(normalizeEventDetailPayload);
 
     saveEventDetailsCache(prompt, depth, events);
+    try {
+      await recordTokenUsage({
+        scenarioId,
+        ipAddress,
+        route: "event-details",
+        model,
+        usage,
+        requestId
+      });
+    } catch (error) {
+      console.error("Failed to record event-details token usage:", error);
+    }
 
     return NextResponse.json({ events });
   } catch (error) {

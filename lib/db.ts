@@ -54,6 +54,39 @@ export async function ensureSchema() {
         CREATE INDEX IF NOT EXISTS scenarios_updated_at_idx
         ON scenarios (updated_at DESC);
       `);
+      await query(`
+        CREATE TABLE IF NOT EXISTS token_usage (
+          id BIGSERIAL PRIMARY KEY,
+          scenario_id TEXT,
+          ip_address TEXT NOT NULL,
+          route TEXT NOT NULL,
+          model TEXT NOT NULL DEFAULT '',
+          input_tokens INTEGER NOT NULL DEFAULT 0,
+          output_tokens INTEGER NOT NULL DEFAULT 0,
+          total_tokens INTEGER NOT NULL DEFAULT 0,
+          cached BOOLEAN NOT NULL DEFAULT FALSE,
+          request_id TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
+      await query(`
+        CREATE INDEX IF NOT EXISTS token_usage_scenario_id_idx
+        ON token_usage (scenario_id);
+      `);
+      await query(`
+        CREATE INDEX IF NOT EXISTS token_usage_ip_created_idx
+        ON token_usage (ip_address, created_at DESC);
+      `);
+      await query(`
+        CREATE TABLE IF NOT EXISTS ip_token_totals (
+          ip_address TEXT PRIMARY KEY,
+          total_input_tokens BIGINT NOT NULL DEFAULT 0,
+          total_output_tokens BIGINT NOT NULL DEFAULT 0,
+          total_tokens BIGINT NOT NULL DEFAULT 0,
+          request_count BIGINT NOT NULL DEFAULT 0,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
     })().catch((error) => {
       schemaReady = null;
       throw error;

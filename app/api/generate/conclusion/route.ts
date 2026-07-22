@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { saveConclusionCache } from "@/lib/cache";
 import { sanitizeProse } from "@/lib/sources";
 import { createStructuredResponse, getDeepModel, isTimeoutError } from "@/lib/openai";
+import { getClientIp } from "@/lib/requestMeta";
 import {
   generationDepths,
   scenarioConclusionJsonSchema,
   scenarioConclusionSchema
 } from "@/lib/scenarioSchema";
+import { recordTokenUsage } from "@/lib/tokenUsageRepository";
 import type { GenerationDepth, ScenarioConclusion } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -23,6 +25,8 @@ Return:
 Keep each field to 1-3 sentences. No markdown. No URLs. Uncertainty should increase for long-range claims.`;
 
 export async function POST(request: Request) {
+  const ipAddress = getClientIp(request);
+
   try {
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: "OPENAI_API_KEY is missing." }, { status: 500 });
@@ -30,6 +34,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
+    const scenarioId = typeof body.scenarioId === "string" ? body.scenarioId.trim() : "";
     const depth = (generationDepths.includes(body.depth) ? body.depth : "standard") as GenerationDepth;
     const title = typeof body.title === "string" ? body.title : "";
     const summary = typeof body.summary === "string" ? body.summary : "";
@@ -42,7 +47,7 @@ export async function POST(request: Request) {
 
     const outcomeMax = depth === "deep" ? 4 : 3;
     const model = getDeepModel();
-    const { data } = await createStructuredResponse<ScenarioConclusion>({
+    const { data, usage, requestId } = await createStructuredResponse<ScenarioConclusion>({
       route: "generate:conclusion",
       model,
       timeoutMs: CONCLUSION_TIMEOUT_MS,
@@ -81,6 +86,18 @@ export async function POST(request: Request) {
     };
 
     saveConclusionCache(prompt, depth, conclusion);
+    try {
+      await recordTokenUsage({
+        scenarioId,
+        ipAddress,
+        route: "conclusion",
+        model,
+        usage,
+        requestId
+      });
+    } catch (error) {
+      console.error("Failed to record conclusion token usage:", error);
+    }
     return NextResponse.json(conclusion);
   } catch (error) {
     console.error("Conclusion generation failed:", error);

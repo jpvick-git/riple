@@ -24,6 +24,7 @@ import type {
 
 function compactContext(scenario: Scenario) {
   return {
+    scenarioId: scenario.id,
     prompt: scenario.prompt,
     depth: scenario.depth,
     title: scenario.title,

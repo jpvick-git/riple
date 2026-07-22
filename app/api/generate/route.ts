@@ -4,7 +4,9 @@ import { foundationToScenario } from "@/lib/normalizeScenario";
 import { createStructuredResponse, createSlug, isTimeoutError } from "@/lib/openai";
 import { createFoundationJsonSchema, createFoundationSchema, generationDepths } from "@/lib/scenarioSchema";
 import { getFastModel } from "@/lib/openai";
+import { getClientIp } from "@/lib/requestMeta";
 import { saveScenario } from "@/lib/scenarioRepository";
+import { recordTokenUsage } from "@/lib/tokenUsageRepository";
 import type { GenerationDepth } from "@/lib/types";
 import { eventCountForDepth } from "@/lib/types";
 
@@ -34,6 +36,8 @@ Rules:
 - Use the supplied id exactly`;
 
 export async function POST(request: Request) {
+  const ipAddress = getClientIp(request);
+
   try {
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -68,12 +72,24 @@ export async function POST(request: Request) {
       } catch (error) {
         console.error("Failed to persist cached foundation:", error);
       }
+      try {
+        await recordTokenUsage({
+          scenarioId: id,
+          ipAddress,
+          route: "foundation",
+          model: "cache",
+          usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+          cached: true
+        });
+      } catch (error) {
+        console.error("Failed to record cached token usage:", error);
+      }
       return NextResponse.json({ ...hydrated, cached: true });
     }
 
     const counts = eventCountForDepth(depth);
     const model = getFastModel();
-    const { data, durationMs } = await createStructuredResponse<{
+    const { data, durationMs, usage, requestId } = await createStructuredResponse<{
       id: string;
       title: string;
       prompt: string;
@@ -143,9 +159,21 @@ Generate ${counts.min}-${counts.max} timeline event outlines now.`
     } catch (error) {
       console.error("Failed to persist foundation scenario:", error);
     }
+    try {
+      await recordTokenUsage({
+        scenarioId: id,
+        ipAddress,
+        route: "foundation",
+        model,
+        usage,
+        requestId
+      });
+    } catch (error) {
+      console.error("Failed to record foundation token usage:", error);
+    }
 
     console.info(
-      `[generate:foundation] events=${scenario.timeline.length} duration=${(durationMs / 1000).toFixed(1)}s cached=false`
+      `[generate:foundation] events=${scenario.timeline.length} duration=${(durationMs / 1000).toFixed(1)}s cached=false tokens=${usage.totalTokens}`
     );
 
     return NextResponse.json(scenario);

@@ -92,11 +92,45 @@ export function logGeneration(meta: {
   timedOut?: boolean;
   events?: number;
   outputChars?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
 }) {
   const duration = `${(meta.durationMs / 1000).toFixed(1)}s`;
   console.info(
-    `[${meta.route}] request=${meta.requestId} model=${meta.model} duration=${duration} events=${meta.events ?? "-"} outputChars=${meta.outputChars ?? "-"} timedOut=${Boolean(meta.timedOut)} success=${meta.success}`
+    `[${meta.route}] request=${meta.requestId} model=${meta.model} duration=${duration} events=${meta.events ?? "-"} outputChars=${meta.outputChars ?? "-"} tokens=${meta.totalTokens ?? "-"} (in=${meta.inputTokens ?? "-"} out=${meta.outputTokens ?? "-"}) timedOut=${Boolean(meta.timedOut)} success=${meta.success}`
   );
+}
+
+export type TokenUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+};
+
+export function extractTokenUsage(response: {
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
+    prompt_tokens?: number;
+    completion_tokens?: number;
+  } | null;
+}): TokenUsage {
+  const usage = response.usage;
+  if (!usage) {
+    return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+  }
+
+  const inputTokens = usage.input_tokens ?? usage.prompt_tokens ?? 0;
+  const outputTokens = usage.output_tokens ?? usage.completion_tokens ?? 0;
+  const totalTokens = usage.total_tokens ?? inputTokens + outputTokens;
+
+  return {
+    inputTokens: Number(inputTokens) || 0,
+    outputTokens: Number(outputTokens) || 0,
+    totalTokens: Number(totalTokens) || 0
+  };
 }
 
 export async function createStructuredResponse<T>({
@@ -117,7 +151,14 @@ export async function createStructuredResponse<T>({
   system: string;
   user: string;
   tools?: Array<{ type: "web_search" }>;
-}): Promise<{ data: T; requestId: string; outputText: string; durationMs: number }> {
+}): Promise<{
+  data: T;
+  requestId: string;
+  outputText: string;
+  durationMs: number;
+  usage: TokenUsage;
+  model: string;
+}> {
   const requestId = createRequestId();
   const started = Date.now();
   const client = createOpenAIClient(timeoutMs);
@@ -148,16 +189,20 @@ export async function createStructuredResponse<T>({
 
     const data = JSON.parse(outputText) as T;
     const durationMs = Date.now() - started;
+    const usage = extractTokenUsage(response);
     logGeneration({
       route,
       requestId,
       model,
       durationMs,
       success: true,
-      outputChars: outputText.length
+      outputChars: outputText.length,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      totalTokens: usage.totalTokens
     });
 
-    return { data, requestId, outputText, durationMs };
+    return { data, requestId, outputText, durationMs, usage, model };
   } catch (error) {
     logGeneration({
       route,
