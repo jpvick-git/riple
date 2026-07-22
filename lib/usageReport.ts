@@ -1,4 +1,5 @@
 import { ensureSchema, isDatabaseConfigured, query } from "@/lib/db";
+import { estimateCostUsd, formatUsd, getModelPricing } from "@/lib/pricing";
 
 export type DailyUsageReport = {
   timeZone: string;
@@ -14,16 +15,20 @@ export type DailyUsageReport = {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  estimatedCostUsd: number;
+  pricingIncomplete: boolean;
   byRoute: Array<{
     route: string;
     requests: number;
     cachedRequests: number;
     totalTokens: number;
+    costUsd: number;
   }>;
   topIps: Array<{
     ipAddress: string;
     requests: number;
     totalTokens: number;
+    costUsd: number;
   }>;
 };
 
@@ -104,44 +109,110 @@ export async function buildDailyUsageReport(
     [windowStart, windowEnd]
   );
 
-  const byRoute = await query<{
+  const byRouteRows = await query<{
     route: string;
+    model: string;
     requests: string;
     cached_requests: string;
+    input_tokens: string;
+    output_tokens: string;
     total_tokens: string;
   }>(
     `
       SELECT
         route,
+        model,
         COUNT(*)::text AS requests,
         COUNT(*) FILTER (WHERE cached)::text AS cached_requests,
+        COALESCE(SUM(input_tokens), 0)::text AS input_tokens,
+        COALESCE(SUM(output_tokens), 0)::text AS output_tokens,
         COALESCE(SUM(total_tokens), 0)::text AS total_tokens
       FROM token_usage
       WHERE created_at >= $1 AND created_at < $2
-      GROUP BY route
-      ORDER BY SUM(total_tokens) DESC, COUNT(*) DESC
+      GROUP BY route, model
     `,
     [windowStart, windowEnd]
   );
 
-  const topIps = await query<{
+  const ipRows = await query<{
     ip_address: string;
+    model: string;
     requests: string;
+    input_tokens: string;
+    output_tokens: string;
     total_tokens: string;
   }>(
     `
       SELECT
         ip_address,
+        model,
         COUNT(*)::text AS requests,
+        COALESCE(SUM(input_tokens), 0)::text AS input_tokens,
+        COALESCE(SUM(output_tokens), 0)::text AS output_tokens,
         COALESCE(SUM(total_tokens), 0)::text AS total_tokens
       FROM token_usage
       WHERE created_at >= $1 AND created_at < $2
-      GROUP BY ip_address
-      ORDER BY SUM(total_tokens) DESC, COUNT(*) DESC
-      LIMIT 5
+      GROUP BY ip_address, model
     `,
     [windowStart, windowEnd]
   );
+
+  let pricingIncomplete = false;
+
+  const routeMap = new Map<
+    string,
+    { requests: number; cachedRequests: number; totalTokens: number; costUsd: number }
+  >();
+  for (const row of byRouteRows.rows) {
+    if (getModelPricing(row.model) === null) pricingIncomplete = true;
+    const entry = routeMap.get(row.route) ?? {
+      requests: 0,
+      cachedRequests: 0,
+      totalTokens: 0,
+      costUsd: 0
+    };
+    entry.requests += Number(row.requests);
+    entry.cachedRequests += Number(row.cached_requests);
+    entry.totalTokens += Number(row.total_tokens);
+    entry.costUsd += estimateCostUsd(
+      row.model,
+      Number(row.input_tokens),
+      Number(row.output_tokens)
+    );
+    routeMap.set(row.route, entry);
+  }
+
+  const byRoute = [...routeMap.entries()]
+    .map(([route, v]) => ({ route, ...v }))
+    .sort((a, b) => b.totalTokens - a.totalTokens || b.requests - a.requests);
+
+  const ipMap = new Map<
+    string,
+    { requests: number; totalTokens: number; costUsd: number }
+  >();
+  for (const row of ipRows.rows) {
+    if (getModelPricing(row.model) === null) pricingIncomplete = true;
+    const entry = ipMap.get(row.ip_address) ?? {
+      requests: 0,
+      totalTokens: 0,
+      costUsd: 0
+    };
+    entry.requests += Number(row.requests);
+    entry.totalTokens += Number(row.total_tokens);
+    entry.costUsd += estimateCostUsd(
+      row.model,
+      Number(row.input_tokens),
+      Number(row.output_tokens)
+    );
+    ipMap.set(row.ip_address, entry);
+  }
+
+  const topIps = [...ipMap.entries()]
+    .map(([ipAddress, v]) => ({ ipAddress, ...v }))
+    .sort((a, b) => b.totalTokens - a.totalTokens || b.requests - a.requests)
+    .slice(0, 5);
+
+  const estimatedCostUsd = byRoute.reduce((sum, row) => sum + row.costUsd, 0);
 
   const t = totals.rows[0];
   const requests = Number(t?.requests ?? 0);
@@ -161,17 +232,10 @@ export async function buildDailyUsageReport(
     inputTokens: Number(t?.input_tokens ?? 0),
     outputTokens: Number(t?.output_tokens ?? 0),
     totalTokens: Number(t?.total_tokens ?? 0),
-    byRoute: byRoute.rows.map((row) => ({
-      route: row.route,
-      requests: Number(row.requests),
-      cachedRequests: Number(row.cached_requests),
-      totalTokens: Number(row.total_tokens)
-    })),
-    topIps: topIps.rows.map((row) => ({
-      ipAddress: row.ip_address,
-      requests: Number(row.requests),
-      totalTokens: Number(row.total_tokens)
-    }))
+    estimatedCostUsd,
+    pricingIncomplete,
+    byRoute,
+    topIps
   };
 }
 
@@ -181,12 +245,16 @@ export function formatUsageReportEmail(report: DailyUsageReport) {
       ? `${Math.round((report.cachedRequests / report.requests) * 100)}%`
       : "n/a";
 
+  const costLabel = `${formatUsd(report.estimatedCostUsd)}${
+    report.pricingIncomplete ? "+ (partial)" : ""
+  }`;
+
   const routeLines =
     report.byRoute.length > 0
       ? report.byRoute
           .map(
             (row) =>
-              `  • ${row.route}: ${row.requests} req (${row.cachedRequests} cached), ${row.totalTokens.toLocaleString()} tokens`
+              `  • ${row.route}: ${row.requests} req (${row.cachedRequests} cached), ${row.totalTokens.toLocaleString()} tokens, ~${formatUsd(row.costUsd)}`
           )
           .join("\n")
       : "  • none";
@@ -196,7 +264,7 @@ export function formatUsageReportEmail(report: DailyUsageReport) {
       ? report.topIps
           .map(
             (row) =>
-              `  • ${row.ipAddress}: ${row.requests} req, ${row.totalTokens.toLocaleString()} tokens`
+              `  • ${row.ipAddress}: ${row.requests} req, ${row.totalTokens.toLocaleString()} tokens, ~${formatUsd(row.costUsd)}`
           )
           .join("\n")
       : "  • none";
@@ -214,6 +282,8 @@ Tokens
   Input:  ${report.inputTokens.toLocaleString()}
   Output: ${report.outputTokens.toLocaleString()}
   Total:  ${report.totalTokens.toLocaleString()}
+
+Estimated cost: ${costLabel}
 
 By route
 ${routeLines}
@@ -234,6 +304,7 @@ Window (UTC): ${report.windowStart} → ${report.windowEnd}
         <tr><td style="padding:6px 0">AI / cached</td><td style="padding:6px 0;text-align:right;font-weight:600">${report.aiRequests} / ${report.cachedRequests} (${cacheRate})</td></tr>
         <tr><td style="padding:6px 0">Unique IPs</td><td style="padding:6px 0;text-align:right;font-weight:600">${report.uniqueIps}</td></tr>
         <tr><td style="padding:6px 0">Total tokens</td><td style="padding:6px 0;text-align:right;font-weight:600">${report.totalTokens.toLocaleString()}</td></tr>
+        <tr><td style="padding:6px 0">Estimated cost</td><td style="padding:6px 0;text-align:right;font-weight:600">${costLabel}</td></tr>
       </table>
       <h2 style="font-size:15px;margin:0 0 8px">By route</h2>
       <pre style="background:#f4f4f5;padding:12px;border-radius:8px;font-size:12px;white-space:pre-wrap">${routeLines}</pre>

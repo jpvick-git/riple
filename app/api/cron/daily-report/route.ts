@@ -42,6 +42,7 @@ async function runDailyReport() {
     day: report.dayLabel,
     requests: report.requests,
     totalTokens: report.totalTokens,
+    estimatedCostUsd: Number(report.estimatedCostUsd.toFixed(4)),
     scenariosCreated: report.scenariosCreated
   });
 }
