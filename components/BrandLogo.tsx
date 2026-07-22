@@ -12,22 +12,22 @@ const VARIANTS = {
   wordmark: {
     src: "/brand/logo-wordmark.png",
     alt: "Riple",
-    width: 146,
-    height: 32,
+    width: 1007,
+    height: 262,
     className: "brand-logo brand-logo-wordmark"
   },
   mark: {
     src: "/brand/logo-mark.png",
     alt: "Riple",
-    width: 40,
-    height: 38,
+    width: 616,
+    height: 486,
     className: "brand-logo brand-logo-mark"
   },
   hero: {
     src: "/brand/logo-hero.png",
     alt: "Riple — One change. Infinite outcomes.",
-    width: 420,
-    height: 126,
+    width: 1007,
+    height: 335,
     className: "brand-logo brand-logo-hero"
   }
 } as const;
@@ -46,6 +46,8 @@ export function BrandLogo({
       width={config.width}
       height={config.height}
       className={`${config.className} ${className}`.trim()}
+      style={{ height: "auto" }}
+      sizes="(max-width: 800px) 88vw, 420px"
       priority={priority}
     />
   );
