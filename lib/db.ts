@@ -15,8 +15,15 @@ export function getPool() {
   }
 
   if (!global.__riplePgPool) {
+    // DO connection strings often include sslmode=require, which makes node-pg
+    // ignore Pool `ssl` and fail on the managed CA chain. Strip it and set SSL here.
+    const connectionString = process.env.DATABASE_URL!.replace(
+      /([?&])sslmode=[^&]*/gi,
+      "$1"
+    ).replace(/[?&]$/, "").replace(/\?&/, "?");
+
     global.__riplePgPool = new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString,
       ssl: { rejectUnauthorized: false },
       max: 5,
       idleTimeoutMillis: 30_000,
